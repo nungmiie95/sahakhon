@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบัญชีสหกรณ์โรงเรียนบ้านนาดินดำ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --font-main: 'Sarabun', sans-serif;
+            --primary: #22c55e; /* Green 500 */
+            --primary-dark: #16a34a; /* Green 600 */
+            --secondary: #f59e0b; /* Amber 500 */
+            --secondary-dark: #d97706; /* Amber 600 */
+            --danger: #ef4444; /* Red 500 */
+            --danger-dark: #dc2626; /* Red 600 */
+            --background: #111827; /* Gray 900 */
+            --sidebar-bg: #1f2937; /* Gray 800 */
+            --card-bg: #1f2937; /* Gray 800 */
+            --text-primary: #f3f4f6; /* Gray 100 */
+            --text-secondary: #9ca3af; /* Gray 400 */
+            --border-color: #374151; /* Gray 700 */
+        }
+        body { 
+            font-family: var(--font-main); 
+            background-color: var(--background);
+            color: var(--text-primary);
+            font-size: 16px;
+        }
+        .sidebar { transition: transform 0.3s ease-in-out; }
+        .sidebar-backdrop { transition: opacity 0.3s ease-in-out; }
+        .btn { transition: all 0.2s ease; font-weight: 600; padding: 0.6rem 1.2rem; border-radius: 0.5rem;}
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+        .btn-primary { background-color: var(--primary); color: white; }
+        .btn-primary:hover { background-color: var(--primary-dark); }
+        .btn-secondary { background-color: var(--secondary); color: white; }
+        .btn-secondary:hover { background-color: var(--secondary-dark); }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-danger:hover { background-color: var(--danger-dark); }
+        .nav-item.active { background-color: #374151; border-right: 4px solid var(--primary); }
+        .data-card { 
+            background-color: var(--card-bg); 
+            border-radius: 0.75rem; 
+            border: 1px solid var(--border-color);
+        }
+        .table-striped tbody tr:nth-child(even) { background-color: #37415160; }
+        .table-striped tbody tr:hover { background-color: #4b556360; }
+        h1, h2, h3, h4, h5, h6 { color: var(--text-primary); }
+        .text-muted { color: var(--text-secondary); }
+        .chart-container { position: relative; height: 350px; }
+        input, select, textarea {
+            background-color: #374151;
+            color: var(--text-primary);
+            border: 1px solid #4b5563;
+        }
+        input::placeholder, textarea::placeholder { color: #9ca3af; }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Overlays & Modals -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[100] flex-col items-center justify-center hidden"><div class="text-center text-white"><i class="fas fa-spinner fa-spin text-4xl mb-4"></i><p id="loadingText" class="text-lg">กำลังโหลด...</p></div></div>
+    <div id="customAlertModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700"><div class="p-6 text-center"><p id="customAlertMessage" class="text-lg mb-6"></p><button id="customAlertOkButton" class="w-full btn btn-primary">ตกลง</button></div></div></div>
+    <div id="customConfirmModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700"><div class="p-6"><p id="customConfirmMessage" class="text-lg mb-6 text-center"></p><div class="flex justify-center space-x-4"><button id="customConfirmCancelButton" class="flex-1 px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button id="customConfirmOkButton" class="flex-1 btn btn-danger">ยืนยัน</button></div></div></div></div>
+
+    <!-- Login Screen -->
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-background p-4">
+        <div class="bg-sidebar-bg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-green-900/50"><i class="fa-solid fa-school text-white text-3xl"></i></div>
+                <h1 class="text-3xl font-bold">ระบบบัญชีสหกรณ์</h1>
+                <p class="text-muted mt-2">โรงเรียนบ้านนาดินดำ</p>
+            </div>
+            <form id="loginForm" class="space-y-6">
+                <div><label for="username" class="block text-base font-medium text-gray-300 mb-1">ชื่อผู้ใช้</label><input type="text" id="username" class="w-full text-base px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="กรอกชื่อผู้ใช้" required></div>
+                <div><label for="password" class="block text-base font-medium text-gray-300 mb-1">รหัสผ่าน</label><input type="password" id="password" class="w-full text-base px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="กรอกรหัสผ่าน" required></div>
+                <button type="submit" class="w-full btn btn-primary text-base"><i class="fas fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ</button>
+            </form>
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700"><p class="text-sm font-medium text-gray-300 mb-2">ข้อมูลสำหรับทดสอบ:</p><p class="text-sm text-gray-400">ผู้ดูแล: <span class="font-semibold text-gray-200">admin / admin123</span></p></div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="hidden">
+        <div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden opacity-0 sidebar-backdrop"></div>
+        <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-sidebar-bg text-slate-200 z-40 sidebar -translate-x-full lg:translate-x-0 border-r border-gray-700">
+            <div class="p-5 border-b border-gray-700 flex items-center"><div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3"><i class="fa-solid fa-school text-white"></i></div><div><h1 class="text-lg font-bold text-white">บัญชีสหกรณ์</h1><p class="text-xs text-slate-400">รร. บ้านนาดินดำ</p></div></div>
+            <div class="p-4 mt-2"><div class="flex items-center text-sm"><i class="fas fa-user-circle mr-2 text-slate-400"></i><span id="currentUser" class="font-semibold"></span><span id="userRole" class="ml-2 px-2 py-0.5 bg-green-600 text-white rounded-full text-xs font-semibold"></span></div></div>
+            <nav class="mt-4 flex-grow">
+                <a href="#" onclick="showPage('dashboard', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item active"><i class="fas fa-chart-pie fa-fw mr-4"></i><span class="font-semibold">แดชบอร์ด</span></a>
+                <a href="#" onclick="showPage('reports', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-chart-bar fa-fw mr-4"></i><span class="font-semibold">รายงาน</span></a>
+                <a href="#" onclick="showPage('income', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-arrow-up fa-fw mr-4 text-green-400"></i><span class="font-semibold">รายรับ</span></a>
+                <a href="#" onclick="showPage('expense', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-arrow-down fa-fw mr-4 text-red-400"></i><span class="font-semibold">รายจ่าย</span></a>
+                <a href="#" onclick="showPage('members', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-users fa-fw mr-4"></i><span class="font-semibold">จัดการสมาชิก</span></a>
+                <a href="#" onclick="showPage('dividend', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-hand-holding-dollar fa-fw mr-4"></i><span class="font-semibold">จ่ายปันผล</span></a>
+                <div id="adminMenu" class="hidden border-t border-gray-700 mt-2 pt-2">
+                    <a href="#" onclick="showPage('audit', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-history fa-fw mr-4"></i><span class="font-semibold">ประวัติการแก้ไข</span></a>
+                    <a href="#" onclick="showPage('backup', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-database fa-fw mr-4"></i><span class="font-semibold">สำรอง/กู้คืน</span></a>
+                </div>
+            </nav>
+            <div class="absolute bottom-0 w-full p-2"><a href="#" onclick="logout()" class="flex items-center w-full px-4 py-3 hover:bg-red-800/50 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw mr-4"></i><span class="font-semibold">ออกจากระบบ</span></a></div>
+        </aside>
+        <main id="mainContent" class="lg:ml-64 min-h-screen transition-all duration-300">
+            <header class="bg-gray-800/80 backdrop-blur-lg sticky top-0 z-20 border-b border-gray-700 px-4 sm:px-6 py-3">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center"><button id="mobileMenuBtn" class="lg:hidden text-gray-300 mr-4"><i class="fas fa-bars text-xl"></i></button><h2 id="pageTitle" class="text-2xl font-bold">แดชบอร์ด</h2></div>
+                    <div class="flex items-center space-x-4"><span class="text-gray-300 hidden sm:block font-semibold" id="currentUserHeader"></span><div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center ring-2 ring-gray-900"><i class="fas fa-user text-white"></i></div></div>
+                </div>
+            </header>
+            <div id="pageContainer" class="p-4 sm:p-6"></div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="incomeModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg border border-gray-700"><div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 id="incomeModalTitle" class="text-xl font-bold">เพิ่มรายการรายรับ</h3><button onclick="showModal('incomeModal', false)" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><form id="incomeForm" class="p-6 space-y-4"><input type="hidden" id="incomeEditId"><div><label class="block text-base font-medium text-gray-300 mb-1">วันที่</label><input type="date" id="incomeDate" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">รายละเอียด</label><input type="text" id="incomeDescription" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น ขายสินค้า" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">ช่องทางชำระเงิน</label><select id="incomePaymentMethod" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required><option value="">เลือกช่องทางชำระ</option><option value="เงินสด">เงินสด</option><option value="โอนเงิน">โอนเงิน</option></select></div><div><label class="block text-base font-medium text-gray-300 mb-1">ยอดรวม (บาท)</label><input type="number" id="incomeAmount" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="0.00" step="0.01" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">หมายเหตุ</label><textarea id="incomeNote" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" rows="3" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea></div><div class="flex justify-end space-x-3 pt-4"><button type="button" onclick="showModal('incomeModal', false)" class="px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button type="submit" class="btn btn-secondary">บันทึก</button></div></form></div></div>
+    <div id="expenseModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg border border-gray-700"><div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 id="expenseModalTitle" class="text-xl font-bold">เพิ่มรายการรายจ่าย</h3><button onclick="showModal('expenseModal', false)" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><form id="expenseForm" class="p-6 space-y-4"><input type="hidden" id="expenseEditId"><div><label class="block text-base font-medium text-gray-300 mb-1">วันที่</label><input type="date" id="expenseDate" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">รายละเอียด</label><input type="text" id="expenseDescription" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น ซื้ออุปกรณ์" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">ช่องทางชำระเงิน</label><select id="expensePaymentMethod" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required><option value="">เลือกช่องทางชำระ</option><option value="เงินสด">เงินสด</option><option value="โอนเงิน">โอนเงิน</option></select></div><div><label class="block text-base font-medium text-gray-300 mb-1">ยอดรวม (บาท)</label><input type="number" id="expenseAmount" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="0.00" step="0.01" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">แนบใบเสร็จ</label><input type="file" id="expenseReceipt" class="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-green-900/50 file:text-green-300 hover:file:bg-green-800/50" accept="image/*,.pdf"><p class="text-xs text-muted mt-1">**หมายเหตุ:** การอัปโหลดไฟล์ยังไม่รองรับ</p></div><div><label class="block text-base font-medium text-gray-300 mb-1">หมายเหตุ</label><textarea id="expenseNote" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" rows="3" placeholder="หมายเหตุเพิ่มเติม (ถ้ามี)"></textarea></div><div class="flex justify-end space-x-3 pt-4"><button type="button" onclick="showModal('expenseModal', false)" class="px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button type="submit" class="btn btn-primary">บันทึก</button></div></form></div></div>
+    <div id="memberModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg border border-gray-700"><div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 id="memberModalTitle" class="text-xl font-bold">เพิ่มสมาชิก</h3><button onclick="showModal('memberModal', false)" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><form id="memberForm" class="p-6 space-y-4"><input type="hidden" id="memberEditId"><div><label class="block text-base font-medium text-gray-300 mb-1">รหัสสมาชิก</label><input type="text" id="memberId" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น T001" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">ชื่อ-นามสกุล</label><input type="text" id="memberName" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น นายสมชาย ใจดี" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">ประเภทสมาชิก</label><select id="memberType" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required><option value="">เลือกประเภท</option><option value="ครู">ครู</option><option value="นักเรียน">นักเรียน</option></select></div><div><label class="block text-base font-medium text-gray-300 mb-1">ทุนเรือนหุ้น (บาท)</label><input type="number" id="memberShares" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="0.00" step="0.01" required></div><div><label class="block text-base font-medium text-gray-300 mb-1">วันที่เข้าร่วม</label><input type="date" id="memberJoinDate" class="w-full text-base px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" required></div><div class="flex justify-end space-x-3 pt-4"><button type="button" onclick="showModal('memberModal', false)" class="px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button type="submit" class="btn btn-secondary">บันทึก</button></div></form></div></div>
+    <div id="csvModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-md border border-gray-700"><div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">นำเข้าข้อมูลสมาชิก</h3><button onclick="showModal('csvModal', false)" class="text-gray-400 hover:text-white text-2xl">&times;</button></div><div class="p-6"><div class="mb-4"><label class="block text-base font-medium text-gray-300 mb-1">เลือกไฟล์ CSV</label><input type="file" id="csvFile" class="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-green-900/50 file:text-green-300 hover:file:bg-green-800/50" accept=".csv"></div><div class="bg-gray-900 p-4 rounded-lg mb-4 border border-gray-700"><h4 class="text-sm font-medium mb-2">รูปแบบไฟล์ CSV:</h4><p class="text-xs text-muted">รหัสสมาชิก,ชื่อ-นามสกุล,ประเภท,ทุนเรือนหุ้น,วันที่เข้าร่วม</p><p class="text-xs text-muted mt-1 font-mono">T001,นายสมชาย ใจดี,ครู,1000,2024-01-01</p></div><div class="flex justify-end space-x-3"><button type="button" onclick="showModal('csvModal', false)" class="px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button type="button" onclick="processCsvFile()" class="btn btn-primary">นำเข้าข้อมูล</button></div></div></div></div>
+    
+    <script>
+        // --- CONFIGURATION & GLOBAL STATE ---
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9m-3m6BRBlXhBDRAVDZb428N5ac8-WTEde_Vvfj0H87-Mtwyr7lqY_gLStpxJ9jk/exec";
+        let currentUser = null, userRole = null;
+        let incomeData = [], expenseData = [], membersData = [], auditLog = [];
+        let incomeExpenseChart = null, memberSharesChart = null;
+        const users = { 'admin': { password: 'admin123', role: 'ผู้ดูแล', name: 'ผู้ดูแลระบบ' } };
+        let confirmCallback = null;
+
+        // --- CORE APP INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPageTemplates();
+            setDefaultDates();
+            setupEventListeners();
+        });
+
+        // --- EVENT LISTENERS & SETUP ---
+        function setupEventListeners() {
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            document.getElementById('customAlertOkButton').addEventListener('click', () => showCustomAlert(false));
+            document.getElementById('customConfirmCancelButton').addEventListener('click', () => showCustomConfirm(false));
+            document.getElementById('customConfirmOkButton').addEventListener('click', () => { if (confirmCallback) confirmCallback(); showCustomConfirm(false); });
+            setupMobileMenu();
+        }
+
+        function setupMobileMenu() {
+            const btn = document.getElementById('mobileMenuBtn'), sidebar = document.getElementById('sidebar'), backdrop = document.getElementById('sidebarBackdrop');
+            const open = () => { sidebar.classList.remove('-translate-x-full'); backdrop.classList.remove('hidden'); setTimeout(() => backdrop.classList.remove('opacity-0'), 10); };
+            const close = () => { sidebar.classList.add('-translate-x-full'); backdrop.classList.add('opacity-0'); setTimeout(() => backdrop.classList.add('hidden'), 300); };
+            btn.addEventListener('click', open);
+            backdrop.addEventListener('click', close);
+        }
+
+        // --- DATA HANDLING (GOOGLE SHEETS API) ---
+        async function postDataToGoogleSheet(action, payload) {
+            showLoading(true, 'กำลังบันทึกข้อมูล...');
+            try {
+                const response = await fetch(SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action, payload }), headers: { 'Content-Type': 'text/plain;charset=utf-8' }});
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('Error posting data:', error);
+                showCustomAlert(`เกิดข้อผิดพลาดในการบันทึกข้อมูล: ${error.message}`);
+                return { status: 'error', message: error.message };
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadDataFromGoogleSheet() {
+            showLoading(true, 'กำลังดึงข้อมูลล่าสุด...');
+            try {
+                const response = await fetch(SCRIPT_URL);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const data = await response.json();
+                if (data.status === 'success') {
+                    incomeData = data.data.incomeData || [];
+                    expenseData = data.data.expenseData || [];
+                    membersData = data.data.membersData || [];
+                    auditLog = data.data.auditLog || [];
+                    return true;
+                } else { throw new Error(data.message); }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                showCustomAlert(`ไม่สามารถดึงข้อมูลจาก Google Sheet ได้: ${error.message}`);
+                return false;
+            } finally { showLoading(false); }
+        }
+        
+        // --- AUTHENTICATION ---
+        function handleLogin(e) { e.preventDefault(); const u = document.getElementById('username').value, p = document.getElementById('password').value; if (users[u] && users[u].password === p) { loginUser(u, users[u].role, users[u].name); } else { showCustomAlert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); } }
+        async function loginUser(username, role, name) { const dataLoaded = await loadDataFromGoogleSheet(); if (!dataLoaded) return; currentUser = name; userRole = role; document.getElementById('currentUser').textContent = name; document.getElementById('userRole').textContent = role; document.getElementById('currentUserHeader').textContent = name; if (role === 'ผู้ดูแล') { document.getElementById('adminMenu').classList.remove('hidden'); } document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); showPage('dashboard', { currentTarget: document.querySelector('a[onclick^="showPage(\'dashboard\'"]'), preventDefault: () => {} }); }
+        async function logout() { showCustomConfirm('คุณต้องการออกจากระบบหรือไม่?', async () => { await logAudit('ออกจากระบบ', `ผู้ใช้ ${currentUser} ออกจากระบบ`); currentUser = null; userRole = null; document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); document.getElementById('adminMenu').classList.add('hidden'); document.getElementById('loginForm').reset(); }); }
+        
+        // --- UI & NAVIGATION ---
+        function showPage(pageId, event) { if (event) event.preventDefault(); document.getElementById('pageContainer').innerHTML = document.getElementById(pageId + 'Template').innerHTML; const titles = { 'dashboard': 'แดชบอร์ด', 'reports': 'รายงานและวิเคราะห์', 'income': 'รายรับ', 'expense': 'รายจ่าย', 'members': 'จัดการสมาชิก', 'dividend': 'จ่ายปันผล', 'audit': 'ประวัติการแก้ไข', 'backup': 'สำรอง/กู้คืน' }; document.getElementById('pageTitle').textContent = titles[pageId] || 'แดชบอร์ด'; document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active')); event.currentTarget.classList.add('active'); renderAllData(); if (window.innerWidth < 1024) { document.getElementById('sidebar').classList.add('-translate-x-full'); const b = document.getElementById('sidebarBackdrop'); b.classList.add('opacity-0'); setTimeout(() => b.classList.add('hidden'), 300); } if (pageId === 'reports') setTimeout(initializeCharts, 100); }
+        function renderAllData() { if (document.getElementById('dashboardPage')) updateDashboard(); if (document.getElementById('incomeTable')) { document.getElementById('incomeForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'income')); loadIncomeTable(); } if (document.getElementById('expenseTable')) { document.getElementById('expenseForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'expense')); loadExpenseTable(); } if (document.getElementById('membersTable')) { document.getElementById('memberForm').addEventListener('submit', handleMemberSubmit); loadMembersTable(); } if (document.getElementById('auditTable')) loadAuditLog(); }
+        
+        // --- DASHBOARD & TRANSACTIONS ---
+        function updateDashboard() { const today = new Date().toISOString().split('T')[0]; const todayIncome = incomeData.filter(i => (i.date || '') === today).reduce((s, i) => s + parseFloat(i.amount || 0), 0); const todayExpense = expenseData.filter(i => (i.date || '') === today).reduce((s, i) => s + parseFloat(i.amount || 0), 0); const totalIncome = incomeData.reduce((s, i) => s + parseFloat(i.amount || 0), 0); const totalExpense = expenseData.reduce((s, i) => s + parseFloat(i.amount || 0), 0); document.getElementById('todayIncome').textContent = '฿' + todayIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 }); document.getElementById('todayExpense').textContent = '฿' + todayExpense.toLocaleString('th-TH', { minimumFractionDigits: 2 }); document.getElementById('todayProfit').textContent = '฿' + (todayIncome - todayExpense).toLocaleString('th-TH', { minimumFractionDigits: 2 }); document.getElementById('totalBalance').textContent = '฿' + (totalIncome - totalExpense).toLocaleString('th-TH', { minimumFractionDigits: 2 }); loadRecentTransactions(); }
+        function loadRecentTransactions() { const all = [...incomeData.map(i => ({...i, type: 'รายรับ', c: 'text-green-400'})), ...expenseData.map(i => ({...i, type: 'รายจ่าย', c: 'text-red-400'}))].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)).slice(0, 10); const tb = document.getElementById('recentTransactions'); if (all.length === 0) { tb.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-muted">ยังไม่มีรายการ</td></tr>`; return; } tb.innerHTML = all.map(i => `<tr><td class="px-6 py-4 text-sm">${formatDate(i.date)}</td><td class="px-6 py-4 text-sm">${i.description || '-'}</td><td class="px-6 py-4 text-sm font-semibold ${i.c}">${i.type}</td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.amount || 0).toLocaleString('th-TH', {minimumFractionDigits: 2})}</td></tr>`).join(''); }
+        
+        // --- INCOME / EXPENSE (Shared Logic) ---
+        function openTransactionModal(type, mode = 'add', id = null) { const t = document.getElementById(`${type}ModalTitle`), f = document.getElementById(`${type}Form`); f.reset(); document.getElementById(`${type}EditId`).value = ''; setDefaultDates(); let data = type === 'income' ? incomeData.find(i => i.id == id) : expenseData.find(i => i.id == id); if (mode === 'edit' && data) { t.textContent = `แก้ไขราย${type === 'income' ? 'รับ' : 'จ่าย'}`; Object.keys(data).forEach(key => { const el_id = `${type}${key.charAt(0).toUpperCase() + key.slice(1)}`; const el = document.getElementById(el_id); if (el) el.value = data[key]; }); document.getElementById(`${type}EditId`).value = id; } else { t.textContent = `เพิ่มราย${type === 'income' ? 'รับ' : 'จ่าย'}`; } showModal(`${type}Modal`, true); }
+        async function handleTransactionSubmit(e, type) { e.preventDefault(); const id = document.getElementById(`${type}EditId`).value; const isIncome = type === 'income'; const d = { date: document.getElementById(`${type}Date`).value, description: document.getElementById(`${type}Description`).value, paymentMethod: document.getElementById(`${type}PaymentMethod`).value, amount: document.getElementById(`${type}Amount`).value, note: document.getElementById(`${type}Note`).value }; if (!isIncome) d.receipt = document.getElementById('expenseReceipt').files.length > 0 ? `(ไฟล์) ${document.getElementById('expenseReceipt').files[0].name}` : (id ? (expenseData.find(i => i.id == id) || {}).receipt : ''); if (id) { d.id = id; const r = await postDataToGoogleSheet(`update${isIncome ? 'Income' : 'Expense'}`, d); if (r.status === 'success') { const idx = (isIncome ? incomeData : expenseData).findIndex(i => i.id == id); if (idx > -1) (isIncome ? incomeData : expenseData)[idx] = d; await logAudit(`แก้ไขราย${isIncome ? 'รับ' : 'จ่าย'}`, `ID: ${id}`); showCustomAlert('แก้ไขข้อมูลสำเร็จ'); } } else { d.id = Date.now(); const r = await postDataToGoogleSheet(`add${isIncome ? 'Income' : 'Expense'}`, d); if (r.status === 'success') { (isIncome ? incomeData : expenseData).push(d); await logAudit(`เพิ่มราย${isIncome ? 'รับ' : 'จ่าย'}`, `_ ${d.description}`); showCustomAlert(`บันทึกสำเร็จ`); } } renderAllData(); showModal(`${type}Modal`, false); }
+        function loadTransactionTable(type) { const isIncome = type === 'income'; const data = isIncome ? incomeData : expenseData; const tb = document.getElementById(`${type}Table`); const s = [...data].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)); if (s.length === 0) { tb.innerHTML = `<tr><td colspan="${isIncome ? 6:7}" class="p-8 text-center text-muted">ยังไม่มีรายการ</td></tr>`; return; } tb.innerHTML = s.map(i => `<tr><td class="px-6 py-4 text-sm">${formatDate(i.date)}</td><td class="px-6 py-4 text-sm">${i.description||'-'}</td><td class="px-6 py-4 text-sm">${i.paymentMethod||'-'}</td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td>${isIncome ? '' : `<td class="px-6 py-4 text-sm">${i.receipt||'-'}</td>`}<td class="px-6 py-4 text-sm">${i.note||'-'}</td><td class="px-6 py-4 text-sm text-center"><button onclick="openTransactionModal('${type}','edit','${i.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button onclick="deleteTransaction('${type}','${i.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join(''); }
+        async function deleteTransaction(type, id) { showCustomConfirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?', async () => { const r = await postDataToGoogleSheet(`delete${type === 'income' ? 'Income' : 'Expense'}`, {id}); if (r.status === 'success') { if (type === 'income') incomeData = incomeData.filter(i => i.id != id); else expenseData = expenseData.filter(i => i.id != id); renderAllData(); await logAudit(`ลบราย${type === 'income' ? 'รับ' : 'จ่าย'}`, `ID: ${id}`); showCustomAlert('ลบข้อมูลสำเร็จ'); } }); }
+        
+        // --- MEMBER FUNCTIONS ---
+        function openMemberModal(mode='add',id=null){const t=document.getElementById('memberModalTitle'),f=document.getElementById('memberForm');f.reset();document.getElementById('memberEditId').value='';setDefaultDates();if(mode==='edit'){t.textContent='แก้ไขสมาชิก';const d=membersData.find(i=>i.id==id);if(d){document.getElementById('memberEditId').value=d.id;document.getElementById('memberId').value=d.memberId;document.getElementById('memberName').value=d.name;document.getElementById('memberType').value=d.type;document.getElementById('memberShares').value=d.shares;document.getElementById('memberJoinDate').value=d.joinDate;}}else{t.textContent='เพิ่มสมาชิก';}showModal('memberModal',true);}
+        async function handleMemberSubmit(e){e.preventDefault();const id=document.getElementById('memberEditId').value;const d={memberId:document.getElementById('memberId').value,name:document.getElementById('memberName').value,type:document.getElementById('memberType').value,shares:document.getElementById('memberShares').value,joinDate:document.getElementById('memberJoinDate').value};if(id){d.id=id;const r=await postDataToGoogleSheet('updateMember',d);if(r.status==='success'){const idx=membersData.findIndex(i=>i.id==id);if(idx>-1)membersData[idx]=d;await logAudit('แก้ไขสมาชิก',`ID: ${id}`);showCustomAlert('แก้ไขข้อมูลสำเร็จ');}}else{d.id=Date.now();const r=await postDataToGoogleSheet('addMember',d);if(r.status==='success'){membersData.push(d);await logAudit('เพิ่มสมาชิก',`_ ${d.name}`);showCustomAlert('เพิ่มสมาชิกสำเร็จ');}}renderAllData();showModal('memberModal',false);}
+        function loadMembersTable(){const tb=document.getElementById('membersTable');const s=[...membersData];if(s.length===0){tb.innerHTML=`<tr><td colspan="6" class="p-8 text-center text-muted">ยังไม่มีสมาชิก</td></tr>`;return}tb.innerHTML=s.map(i=>`<tr><td class="px-6 py-4 text-sm">${i.memberId||'-'}</td><td class="px-6 py-4 text-sm">${i.name||'-'}</td><td class="px-6 py-4 text-sm"><span class="px-2 py-1 text-xs font-medium rounded-full ${i.type==='ครู'?'bg-yellow-800/50 text-yellow-300':'bg-green-800/50 text-green-300'}">${i.type||'-'}</span></td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.shares||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td><td class="px-6 py-4 text-sm">${formatDate(i.joinDate)}</td><td class="px-6 py-4 text-sm text-center"><button onclick="openMemberModal('edit','${i.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button onclick="deleteMember('${i.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join('');updateMembersSummary();}
+        async function deleteMember(id){showCustomConfirm('คุณแน่ใจหรือไม่ว่าต้องการลบสมาชิกนี้?',async()=>{const r=await postDataToGoogleSheet('deleteMember',{id});if(r.status==='success'){membersData=membersData.filter(i=>i.id!=id);renderAllData();await logAudit('ลบสมาชิก',`ID: ${id}`);showCustomAlert('ลบข้อมูลสำเร็จ');}});}
+        function updateMembersSummary(){const ts=membersData.reduce((s,m)=>s+parseFloat(m.shares||0),0);const tcs=membersData.filter(m=>m.type==='ครู').reduce((s,m)=>s+parseFloat(m.shares||0),0);const sts=membersData.filter(m=>m.type==='นักเรียน').reduce((s,m)=>s+parseFloat(m.shares||0),0);if(document.getElementById('totalShares')){document.getElementById('totalShares').textContent='฿'+ts.toLocaleString('th-TH',{minimumFractionDigits:2});document.getElementById('teacherShares').textContent='฿'+tcs.toLocaleString('th-TH',{minimumFractionDigits:2});document.getElementById('studentShares').textContent='฿'+sts.toLocaleString('th-TH',{minimumFractionDigits:2});}}
+        async function processCsvFile(){const fI=document.getElementById('csvFile');if(!fI.files.length)return showCustomAlert('กรุณาเลือกไฟล์ CSV');const f=fI.files[0];const r=new FileReader();r.onload=async e=>{const l=e.target.result.split('\n').slice(1);const nM=l.filter(ln=>ln.trim()).map((ln,i)=>{const[mId,nm,ty,sh,jd]=ln.split(',');return{id:Date.now()+i,memberId:(mId||'').trim(),name:(nm||'').trim(),type:(ty||'').trim(),shares:(sh||'').trim(),joinDate:(jd||'').trim()};});if(nM.length>0){const res=await postDataToGoogleSheet('addBulkMembers',nM);if(res.status==='success'){membersData.push(...nM);renderAllData();showModal('csvModal',false);await logAudit('นำเข้า CSV',`${nM.length} รายการ`);showCustomAlert(`นำเข้าสำเร็จ ${nM.length} รายการ`);}}else{showCustomAlert('ไม่พบข้อมูลในไฟล์');}};r.readAsText(f);}
+        
+        async function logAudit(action, details) { const entry = { id: Date.now(), timestamp: new Date().toISOString(), user: currentUser || 'ไม่ระบุตัวตน', action, details }; auditLog.unshift(entry); if (document.getElementById('auditTable')) loadAuditLog(); await postDataToGoogleSheet('logAudit', entry); }
+        function loadAuditLog() { const tbody = document.getElementById('auditTable'); if (auditLog.length === 0) { tbody.innerHTML = `<tr><td colspan="4" class="p-8 text-center text-muted">ไม่มีประวัติ</td></tr>`; return; } tbody.innerHTML = auditLog.slice(0, 100).map(entry => `<tr><td class="px-6 py-4 text-sm">${formatDateTime(entry.timestamp)}</td><td class="px-6 py-4 text-sm">${entry.user}</td><td class="px-6 py-4 text-sm"><span class="px-2 py-1 text-xs rounded-full bg-gray-700">${entry.action}</span></td><td class="px-6 py-4 text-sm text-muted">${entry.details}</td></tr>`).join(''); }
+        
+        function manualBackup(){const d={timestamp:new Date().toISOString(),version:'3.0',data:{incomeData,expenseData,membersData,auditLog}};const b=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download=`SahakornBackup_${new Date().toISOString().split('T')[0]}.json`;a.click();URL.revokeObjectURL(u);logAudit('สำรองข้อมูล','สำรองข้อมูลลงไฟล์ JSON');}
+        function restoreData(){const fI=document.getElementById('restoreFile');if(!fI.files.length)return showCustomAlert('กรุณาเลือกไฟล์');showCustomConfirm('การกู้คืนจะเขียนทับข้อมูลทั้งหมด คุณแน่ใจหรือไม่?',()=>{const f=fI.files[0];const r=new FileReader();r.onload=async e=>{try{const d=JSON.parse(e.target.result);if(d.data){const res=await postDataToGoogleSheet('restoreAllData',d.data);if(res.status==='success'){await loadDataFromGoogleSheet();renderAllData();showCustomAlert('กู้คืนข้อมูลสำเร็จ');await logAudit('กู้คืนข้อมูล',`จากไฟล์ ${f.name}`);}}else{showCustomAlert('ไฟล์ไม่ถูกต้อง');}}catch(err){showCustomAlert('ไม่สามารถอ่านไฟล์ได้');}};r.readAsText(f);});}
+
+        function calculateDividend(){const r=parseFloat(document.getElementById('dividendRate').value);if(!r||r<=0)return showCustomAlert('กรุณากรอกอัตราเงินปันผล');if(membersData.length===0)return showCustomAlert('ยังไม่มีข้อมูลสมาชิก');document.getElementById('dividendTable').innerHTML=membersData.map(m=>{const d=(parseFloat(m.shares||0)*r)/100;return`<tr><td class="px-6 py-4 text-sm">${m.memberId||'-'}</td><td class="px-6 py-4 text-sm">${m.name||'-'}</td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(m.shares||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td><td class="px-6 py-4 text-sm font-bold text-green-400">฿${d.toLocaleString('th-TH',{minimumFractionDigits:2})}</td></tr>`}).join('');document.getElementById('dividendResults').classList.remove('hidden');logAudit('คำนวณปันผล',`อัตรา ${r}%`);}
+        
+        // --- CHARTS ---
+        function initializeCharts() {
+            Chart.defaults.color = '#9ca3af';
+            initializeIncomeExpenseChart();
+            initializeMemberSharesChart();
+        }
+
+        function initializeIncomeExpenseChart() {
+            const ctx = document.getElementById('incomeExpenseChart').getContext('2d');
+            if (incomeExpenseChart) incomeExpenseChart.destroy();
+            const months = [], incomeByMonth = [], expenseByMonth = [];
+            for (let i = 11; i >= 0; i--) { const date = new Date(); date.setMonth(date.getMonth() - i); const monthKey = date.toISOString().slice(0, 7); months.push(date.toLocaleDateString('th-TH', { month: 'short', year: 'numeric' })); incomeByMonth.push(incomeData.filter(item => (item.date||'').startsWith(monthKey)).reduce((sum, item) => sum + parseFloat(item.amount||0), 0)); expenseByMonth.push(expenseData.filter(item => (item.date||'').startsWith(monthKey)).reduce((sum, item) => sum + parseFloat(item.amount||0), 0)); }
+            incomeExpenseChart = new Chart(ctx, { type: 'line', data: { labels: months, datasets: [{ label: 'รายรับ', data: incomeByMonth, borderColor: 'rgba(34, 197, 94, 0.8)', backgroundColor: 'rgba(34, 197, 94, 0.2)', tension: 0.4, fill: true }, { label: 'รายจ่าย', data: expenseByMonth, borderColor: 'rgba(239, 68, 68, 0.8)', backgroundColor: 'rgba(239, 68, 68, 0.2)', tension: 0.4, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, grid: { color: '#374151'}, ticks: { callback: value => '฿' + value.toLocaleString() } }, x: { grid: { color: '#374151'} } }, plugins: { tooltip: { callbacks: { label: context => context.dataset.label + ': ฿' + context.parsed.y.toLocaleString() } } } } });
+        }
+
+        function initializeMemberSharesChart() {
+            const ctx = document.getElementById('memberSharesChart').getContext('2d');
+            if (memberSharesChart) memberSharesChart.destroy();
+            const teacherShares = membersData.filter(m => m.type === 'ครู').reduce((sum, m) => sum + parseFloat(m.shares||0), 0);
+            const studentShares = membersData.filter(m => m.type === 'นักเรียน').reduce((sum, m) => sum + parseFloat(m.shares||0), 0);
+            memberSharesChart = new Chart(ctx, { type: 'doughnut', data: { labels: ['ครู', 'นักเรียน'], datasets: [{ data: [teacherShares, studentShares], backgroundColor: ['#f59e0b', '#22c55e'], borderWidth: 4, borderColor: '#1f2937' }] }, options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom', labels:{color: '#9ca3af'} }, tooltip: { callbacks: { label: context => { const total = teacherShares + studentShares; const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0; return context.label + ': ฿' + context.parsed.toLocaleString() + ' (' + percentage + '%)'; } } } } } });
+        }
+        function generateReport() {
+            const startDate = document.getElementById('reportStartDate').value;
+            const endDate = document.getElementById('reportEndDate').value;
+            if (!startDate || !endDate) return showCustomAlert('กรุณาเลือกช่วงวันที่');
+            
+            const filteredIncome = incomeData.filter(item => item.date >= startDate && item.date <= endDate);
+            const filteredExpense = expenseData.filter(item => item.date >= startDate && item.date <= endDate);
+            
+            const totalIncome = filteredIncome.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+            const totalExpense = filteredExpense.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+            const netProfit = totalIncome - totalExpense;
+
+            document.getElementById('profitLossReport').innerHTML = `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6"> <div class="bg-green-800/20 p-4 rounded-lg border border-green-700/50"> <h4 class="font-semibold text-green-300">รายรับรวม</h4> <p class="text-2xl font-bold text-green-400">฿${totalIncome.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p> </div> <div class="bg-red-800/20 p-4 rounded-lg border border-red-700/50"> <h4 class="font-semibold text-red-300">รายจ่ายรวม</h4> <p class="text-2xl font-bold text-red-400">฿${totalExpense.toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p> </div> <div class="bg-${netProfit >= 0 ? 'sky' : 'amber'}-800/20 p-4 rounded-lg border border-${netProfit >= 0 ? 'sky' : 'amber'}-700/50"> <h4 class="font-semibold text-${netProfit >= 0 ? 'sky' : 'amber'}-300">${netProfit >= 0 ? 'กำไรสุทธิ' : 'ขาดทุนสุทธิ'}</h4> <p class="text-2xl font-bold text-${netProfit >= 0 ? 'sky' : 'amber'}-400">฿${Math.abs(netProfit).toLocaleString('th-TH', { minimumFractionDigits: 2 })}</p> </div> </div> <div class="text-sm text-muted"> <p>ช่วงเวลา: ${formatDate(startDate)} ถึง ${formatDate(endDate)}</p> </div>`;
+            logAudit('สร้างรายงาน', `สร้างรายงานกำไร-ขาดทุน`);
+        }
+
+        // --- UTILITY FUNCTIONS ---
+        function formatDate(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); } catch (e) { return d; } }
+        function formatDateTime(d) { if (!d) return '-'; try { return new Date(d).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch (e) { return d; } }
+        function showLoading(show, message = 'กำลังโหลด...') { const el = document.getElementById('loadingOverlay'); document.getElementById('loadingText').textContent = message; if (show) { el.classList.remove('hidden'); el.classList.add('flex'); } else { el.classList.add('hidden'); el.classList.remove('flex'); } }
+        function showCustomAlert(message) { const el = document.getElementById('customAlertModal'); if (!message) { el.classList.add('hidden'); el.classList.remove('flex'); } else { document.getElementById('customAlertMessage').textContent = message; el.classList.remove('hidden'); el.classList.add('flex'); } }
+        function showCustomConfirm(message, callback) { const el = document.getElementById('customConfirmModal'); if (!message) { el.classList.add('hidden'); el.classList.remove('flex'); confirmCallback = null; } else { document.getElementById('customConfirmMessage').textContent = message; confirmCallback = callback; el.classList.remove('hidden'); el.classList.add('flex'); } }
+        function showModal(modalId, show = true) { const el = document.getElementById(modalId); if(show){el.classList.remove('hidden'); el.classList.add('flex');} else {el.classList.add('hidden'); el.classList.remove('flex'); const form = el.querySelector('form'); if(form) form.reset(); setDefaultDates();} }
+        function setDefaultDates(){const t=new Date().toISOString().split('T')[0];['incomeDate','expenseDate','memberJoinDate','reportEndDate'].forEach(id=>{const el=document.getElementById(id); if(el)el.value=t;});const rs=document.getElementById('reportStartDate'); if(rs)rs.value=new Date(new Date().getFullYear(),new Date().getMonth(),1).toISOString().split('T')[0];}
+        function exportToExcel() {
+            const allData = [
+                ['ประเภท', 'วันที่', 'รายละเอียด', 'ช่องทางชำระ', 'จำนวนเงิน', 'หมายเหตุ/ใบเสร็จ'],
+                ...incomeData.map(item => ['รายรับ', item.date || '', item.description || '', item.paymentMethod || '', item.amount || 0, item.note || '']),
+                ...expenseData.map(item => ['รายจ่าย', item.date || '', item.description || '', item.paymentMethod || '', item.amount || 0, item.receipt || '']),
+                [], // Empty row separator
+                ['รหัสสมาชิก', 'ชื่อ', 'ประเภท', 'ทุนเรือนหุ้น', 'วันที่เข้าร่วม'],
+                ...membersData.map(item => [item.memberId || '', item.name || '', item.type || '', item.shares || 0, item.joinDate || ''])
+            ];
+            const csvContent = allData.map(row => row.map(cell => `"${(cell+'').replace(/"/g, '""')}"`).join(',')).join('\n');
+            const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.setAttribute('download', `Sahakorn_Export_${new Date().toISOString().split('T')[0]}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            logAudit('ส่งออกข้อมูล', 'ส่งออกข้อมูลเป็นไฟล์ CSV/Excel');
+        }
+
+        // --- TEMPLATE RENDERING ---
+        function renderPageTemplates() {
+            const container = document.body;
+            const templates = {
+                dashboard: `
+                    <div id="dashboardPage">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
+                            <div class="data-card p-6"><div class="flex items-center justify-between"><div><p class="text-base font-medium text-muted">ยอดขายวันนี้</p><p id="todayIncome" class="text-3xl font-bold mt-1">฿0.00</p></div><div class="w-12 h-12 rounded-full bg-green-900/50 flex items-center justify-center"><i class="fas fa-arrow-up text-green-400 text-xl"></i></div></div></div>
+                            <div class="data-card p-6"><div class="flex items-center justify-between"><div><p class="text-base font-medium text-muted">รายจ่ายวันนี้</p><p id="todayExpense" class="text-3xl font-bold mt-1">฿0.00</p></div><div class="w-12 h-12 rounded-full bg-red-900/50 flex items-center justify-center"><i class="fas fa-arrow-down text-red-400 text-xl"></i></div></div></div>
+                            <div class="data-card p-6"><div class="flex items-center justify-between"><div><p class="text-base font-medium text-muted">กำไรวันนี้</p><p id="todayProfit" class="text-3xl font-bold mt-1">฿0.00</p></div><div class="w-12 h-12 rounded-full bg-yellow-900/50 flex items-center justify-center"><i class="fas fa-chart-line text-yellow-400 text-xl"></i></div></div></div>
+                            <div class="data-card p-6"><div class="flex items-center justify-between"><div><p class="text-base font-medium text-muted">ยอดเงินคงเหลือ</p><p id="totalBalance" class="text-3xl font-bold mt-1">฿0.00</p></div><div class="w-12 h-12 rounded-full bg-sky-900/50 flex items-center justify-center"><i class="fas fa-wallet text-sky-400 text-xl"></i></div></div></div>
+                        </div>
+                        <div class="data-card">
+                            <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการล่าสุด</h3></div>
+                            <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ประเภท</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">จำนวนเงิน</th></tr></thead><tbody id="recentTransactions"></tbody></table></div>
+                        </div>
+                    </div>`,
+                reports: `
+                    <div id="reportsPage">
+                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">เลือกช่วงเวลาสำหรับรายงาน</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">จากวันที่</label><input type="date" id="reportStartDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">ถึงวันที่</label><input type="date" id="reportEndDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="flex items-end col-span-2 md:col-span-1"><button onclick="generateReport()" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-chart-bar"></i>สร้างรายงาน</button></div></div></div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"><div class="data-card p-6"><h3 class="text-xl font-bold mb-4">แนวโน้มรายรับ-รายจ่าย</h3><div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div></div><div class="data-card p-6"><h3 class="text-xl font-bold mb-4">สัดส่วนทุนเรือนหุ้น</h3><div class="chart-container"><canvas id="memberSharesChart"></canvas></div></div></div>
+                        <div class="data-card"><div class="p-6 border-b border-gray-700"><h3 class="text-xl font-bold">รายงานกำไร-ขาดทุน</h3></div><div id="profitLossReport" class="p-6"><div class="text-center text-muted py-8">กรุณาเลือกช่วงเวลาและกดสร้างรายงาน</div></div></div>
+                    </div>`,
+                income: `
+                    <div id="incomePage" class="data-card">
+                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายรับ</h3><button onclick="openTransactionModal('income', 'add')" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายรับ</button></div>
+                        <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ช่องทาง</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">จำนวนเงิน</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">หมายเหตุ</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="incomeTable"></tbody></table></div>
+                    </div>`,
+                expense: `
+                    <div id="expensePage" class="data-card">
+                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายจ่าย</h3><button onclick="openTransactionModal('expense', 'add')" class="btn btn-primary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายจ่าย</button></div>
+                        <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ช่องทาง</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">จำนวนเงิน</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ใบเสร็จ</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">หมายเหตุ</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="expenseTable"></tbody></table></div>
+                    </div>`,
+                members: `
+                    <div id="membersPage">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                            <div class="data-card p-6"><h4 class="text-lg font-semibold mb-2">ทุนเรือนหุ้นรวม</h4><p id="totalShares" class="text-3xl font-bold text-green-400">฿0.00</p></div>
+                            <div class="data-card p-6"><h4 class="text-lg font-semibold mb-2">ทุนเรือนหุ้นครู</h4><p id="teacherShares" class="text-3xl font-bold text-yellow-400">฿0.00</p></div>
+                            <div class="data-card p-6"><h4 class="text-lg font-semibold mb-2">ทุนเรือนหุ้นนักเรียน</h4><p id="studentShares" class="text-3xl font-bold text-sky-400">฿0.00</p></div>
+                        </div>
+                        <div class="data-card">
+                            <div class="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4"><h3 class="text-xl font-bold">รายชื่อสมาชิก</h3><div class="flex space-x-2"><button onclick="openMemberModal('add')" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มสมาชิก</button><button onclick="showModal('csvModal', true)" class="btn btn-primary flex items-center gap-2"><i class="fas fa-upload"></i>นำเข้า CSV</button></div></div>
+                            <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รหัส</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ประเภท</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ทุนเรือนหุ้น</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่เข้าร่วม</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="membersTable"></tbody></table></div>
+                        </div>
+                    </div>`,
+                dividend: `
+                    <div id="dividendPage">
+                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">คำนวณเงินปันผล</h3><div class="flex items-center space-x-4"><div class="flex-1"><label class="block text-base font-medium text-gray-300 mb-1">อัตราเงินปันผล (%)</label><input type="number" id="dividendRate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น 5.5" step="0.1"></div><button onclick="calculateDividend()" class="btn btn-primary mt-7 flex items-center gap-2"><i class="fas fa-calculator"></i>คำนวณ</button></div></div>
+                        <div id="dividendResults" class="data-card hidden"><div class="p-6 border-b border-gray-700"><h3 class="text-xl font-bold">ผลการคำนวณเงินปันผล</h3></div><div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รหัส</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ทุนเรือนหุ้น</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">เงินปันผล</th></tr></thead><tbody id="dividendTable"></tbody></table></div></div>
+                    </div>`,
+                audit: `
+                    <div id="auditPage" class="data-card">
+                        <div class="p-6 border-b border-gray-700"><h3 class="text-xl font-bold">ประวัติการแก้ไขข้อมูล</h3><p class="text-sm text-muted mt-1">บันทึกการเปลี่ยนแปลงข้อมูลทั้งหมดในระบบ</p></div>
+                        <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่-เวลา</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ผู้ใช้</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">การกระทำ</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th></tr></thead><tbody id="auditTable"></tbody></table></div>
+                    </div>`,
+                backup: `
+                    <div id="backupPage" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="data-card p-6">
+                            <h3 class="text-xl font-bold mb-4">สำรองและส่งออก</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="font-semibold text-lg">สำรองข้อมูล (สำหรับกู้คืน)</h4>
+                                    <p class="text-sm text-muted mb-2">ดาวน์โหลดไฟล์ \`.json\` สำหรับใช้กู้คืนข้อมูลทั้งหมดของระบบ</p>
+                                    <button onclick="manualBackup()" class="w-full btn btn-secondary flex items-center justify-center gap-2"><i class="fas fa-download"></i>สำรองข้อมูล (.json)</button>
+                                </div>
+                                <div class="border-t border-gray-700 my-4"></div>
+                                <div>
+                                    <h4 class="font-semibold text-lg">ส่งออกเป็น Excel</h4>
+                                    <p class="text-sm text-muted mb-2">ดาวน์โหลดข้อมูลทั้งหมดในรูปแบบไฟล์ \`.csv\` เพื่อเปิดดูใน Excel</p>
+                                    <button onclick="exportToExcel()" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-file-excel"></i>ส่งออก Excel (.csv)</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="data-card p-6">
+                            <h3 class="text-xl font-bold mb-4">กู้คืนข้อมูล</h3>
+                            <div class="space-y-4">
+                                <div class="p-4 bg-yellow-900/50 border border-yellow-800/50 rounded-lg"><div class="flex items-center"><i class="fas fa-exclamation-triangle text-yellow-400 mr-3"></i><p class="text-sm text-yellow-300">การกู้คืนข้อมูลจะเขียนทับข้อมูลปัจจุบันทั้งหมด</p></div></div>
+                                <div><label class="block text-base font-medium text-gray-300 mb-1">เลือกไฟล์สำรองข้อมูล (.json)</label><input type="file" id="restoreFile" class="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-green-900/50 file:text-green-300 hover:file:bg-green-800/50" accept=".json"></div>
+                                <button onclick="restoreData()" class="w-full btn btn-danger flex items-center justify-center gap-2"><i class="fas fa-upload"></i>กู้คืนข้อมูล</button>
+                            </div>
+                        </div>
+                    </div>`
+            };
+            Object.keys(templates).forEach(key => { const t = document.createElement('template'); t.id = key + 'Template'; t.innerHTML = templates[key]; container.appendChild(t); });
+        }
+    </script>
+</body>
+</html>
+
