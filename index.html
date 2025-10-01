@@ -68,25 +68,8 @@
     <div id="customAlertModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700"><div class="p-6 text-center"><p id="customAlertMessage" class="text-lg mb-6"></p><button id="customAlertOkButton" class="w-full btn btn-primary">ตกลง</button></div></div></div>
     <div id="customConfirmModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 backdrop-blur-sm z-[90] hidden items-center justify-center p-4"><div class="bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm border border-gray-700"><div class="p-6"><p id="customConfirmMessage" class="text-lg mb-6 text-center"></p><div class="flex justify-center space-x-4"><button id="customConfirmCancelButton" class="flex-1 px-4 py-2 text-gray-200 bg-gray-600 rounded-lg hover:bg-gray-700 font-semibold">ยกเลิก</button><button id="customConfirmOkButton" class="flex-1 btn btn-danger">ยืนยัน</button></div></div></div></div>
 
-    <!-- Login Screen -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-background p-4">
-        <div class="bg-sidebar-bg rounded-2xl shadow-2xl p-8 w-full max-w-md border border-gray-700">
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4 ring-8 ring-green-900/50"><i class="fa-solid fa-school text-white text-3xl"></i></div>
-                <h1 class="text-3xl font-bold">ระบบบัญชีสหกรณ์</h1>
-                <p class="text-muted mt-2">โรงเรียนบ้านนาดินดำ</p>
-            </div>
-            <form id="loginForm" class="space-y-6">
-                <div><label for="username" class="block text-base font-medium text-gray-300 mb-1">ชื่อผู้ใช้</label><input type="text" id="username" class="w-full text-base px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="กรอกชื่อผู้ใช้" required></div>
-                <div><label for="password" class="block text-base font-medium text-gray-300 mb-1">รหัสผ่าน</label><input type="password" id="password" class="w-full text-base px-4 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="กรอกรหัสผ่าน" required></div>
-                <button type="submit" class="w-full btn btn-primary text-base"><i class="fas fa-sign-in-alt mr-2"></i>เข้าสู่ระบบ</button>
-            </form>
-            <div class="mt-6 p-4 bg-gray-900 rounded-lg border border-gray-700"><p class="text-sm font-medium text-gray-300 mb-2">ข้อมูลสำหรับทดสอบ:</p><p class="text-sm text-gray-400">ผู้ดูแล: <span class="font-semibold text-gray-200">admin / admin123</span></p></div>
-        </div>
-    </div>
-
     <!-- Main App -->
-    <div id="mainApp" class="hidden">
+    <div id="mainApp">
         <div id="sidebarBackdrop" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden lg:hidden opacity-0 sidebar-backdrop"></div>
         <aside id="sidebar" class="fixed left-0 top-0 h-full w-64 bg-sidebar-bg text-slate-200 z-40 sidebar -translate-x-full lg:translate-x-0 border-r border-gray-700">
             <div class="p-5 border-b border-gray-700 flex items-center"><div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center mr-3"><i class="fa-solid fa-school text-white"></i></div><div><h1 class="text-lg font-bold text-white">บัญชีสหกรณ์</h1><p class="text-xs text-slate-400">รร. บ้านนาดินดำ</p></div></div>
@@ -98,12 +81,11 @@
                 <a href="#" onclick="showPage('expense', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-arrow-down fa-fw mr-4 text-red-400"></i><span class="font-semibold">รายจ่าย</span></a>
                 <a href="#" onclick="showPage('members', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-users fa-fw mr-4"></i><span class="font-semibold">จัดการสมาชิก</span></a>
                 <a href="#" onclick="showPage('dividend', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-hand-holding-dollar fa-fw mr-4"></i><span class="font-semibold">จ่ายปันผล</span></a>
-                <div id="adminMenu" class="hidden border-t border-gray-700 mt-2 pt-2">
+                <div id="adminMenu">
                     <a href="#" onclick="showPage('audit', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-history fa-fw mr-4"></i><span class="font-semibold">ประวัติการแก้ไข</span></a>
                     <a href="#" onclick="showPage('backup', event)" class="flex items-center px-5 py-3 hover:bg-gray-700 nav-item"><i class="fas fa-database fa-fw mr-4"></i><span class="font-semibold">สำรอง/กู้คืน</span></a>
                 </div>
             </nav>
-            <div class="absolute bottom-0 w-full p-2"><a href="#" onclick="logout()" class="flex items-center w-full px-4 py-3 hover:bg-red-800/50 rounded-lg transition-colors"><i class="fas fa-sign-out-alt fa-fw mr-4"></i><span class="font-semibold">ออกจากระบบ</span></a></div>
         </aside>
         <main id="mainContent" class="lg:ml-64 min-h-screen transition-all duration-300">
             <header class="bg-gray-800/80 backdrop-blur-lg sticky top-0 z-20 border-b border-gray-700 px-4 sm:px-6 py-3">
@@ -128,23 +110,53 @@
         let currentUser = null, userRole = null;
         let incomeData = [], expenseData = [], membersData = [], auditLog = [];
         let incomeExpenseChart = null, memberSharesChart = null;
-        const users = { 'admin': { password: 'admin123', role: 'ผู้ดูแล', name: 'ผู้ดูแลระบบ' } };
         let confirmCallback = null;
 
         // --- CORE APP INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', () => {
             renderPageTemplates();
             setDefaultDates();
-            setupEventListeners();
+            setupGlobalEventListeners();
+            startApp();
         });
 
         // --- EVENT LISTENERS & SETUP ---
-        function setupEventListeners() {
-            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        function setupGlobalEventListeners() {
             document.getElementById('customAlertOkButton').addEventListener('click', () => showCustomAlert(false));
             document.getElementById('customConfirmCancelButton').addEventListener('click', () => showCustomConfirm(false));
             document.getElementById('customConfirmOkButton').addEventListener('click', () => { if (confirmCallback) confirmCallback(); showCustomConfirm(false); });
             setupMobileMenu();
+            
+            const pageContainer = document.getElementById('pageContainer');
+            pageContainer.addEventListener('click', (e) => {
+                const button = e.target.closest('button[data-action]');
+                if (!button) return;
+
+                const action = button.dataset.action;
+                const id = button.dataset.id;
+                
+                switch (action) {
+                    case 'add-income': openTransactionModal('income', 'add'); break;
+                    case 'edit-income': openTransactionModal('income', 'edit', id); break;
+                    case 'delete-income': deleteTransaction('income', id); break;
+                    case 'add-expense': openTransactionModal('expense', 'add'); break;
+                    case 'edit-expense': openTransactionModal('expense', 'edit', id); break;
+                    case 'delete-expense': deleteTransaction('expense', id); break;
+                    case 'add-member': openMemberModal('add'); break;
+                    case 'edit-member': openMemberModal('edit', id); break;
+                    case 'delete-member': deleteMember(id); break;
+                    case 'import-csv': showModal('csvModal', true); break;
+                    case 'generate-report': generateReport(); break;
+                    case 'calculate-dividend': calculateDividend(); break;
+                    case 'manual-backup': manualBackup(); break;
+                    case 'export-excel': exportToExcel(); break;
+                    case 'restore-data': restoreData(); break;
+                }
+            });
+
+             document.getElementById('incomeForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'income'));
+             document.getElementById('expenseForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'expense'));
+             document.getElementById('memberForm').addEventListener('submit', handleMemberSubmit);
         }
 
         function setupMobileMenu() {
@@ -191,10 +203,24 @@
             } finally { showLoading(false); }
         }
         
-        // --- AUTHENTICATION ---
-        function handleLogin(e) { e.preventDefault(); const u = document.getElementById('username').value, p = document.getElementById('password').value; if (users[u] && users[u].password === p) { loginUser(u, users[u].role, users[u].name); } else { showCustomAlert('ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'); } }
-        async function loginUser(username, role, name) { const dataLoaded = await loadDataFromGoogleSheet(); if (!dataLoaded) return; currentUser = name; userRole = role; document.getElementById('currentUser').textContent = name; document.getElementById('userRole').textContent = role; document.getElementById('currentUserHeader').textContent = name; if (role === 'ผู้ดูแล') { document.getElementById('adminMenu').classList.remove('hidden'); } document.getElementById('loginScreen').classList.add('hidden'); document.getElementById('mainApp').classList.remove('hidden'); showPage('dashboard', { currentTarget: document.querySelector('a[onclick^="showPage(\'dashboard\'"]'), preventDefault: () => {} }); }
-        async function logout() { showCustomConfirm('คุณต้องการออกจากระบบหรือไม่?', async () => { await logAudit('ออกจากระบบ', `ผู้ใช้ ${currentUser} ออกจากระบบ`); currentUser = null; userRole = null; document.getElementById('loginScreen').classList.remove('hidden'); document.getElementById('mainApp').classList.add('hidden'); document.getElementById('adminMenu').classList.add('hidden'); document.getElementById('loginForm').reset(); }); }
+        // --- AUTHENTICATION & APP START ---
+        async function startApp() {
+            const dataLoaded = await loadDataFromGoogleSheet();
+            if (!dataLoaded) {
+                 document.getElementById('pageContainer').innerHTML = `<div class="text-center p-8 data-card"><h3 class="text-xl font-bold text-red-400">เกิดข้อผิดพลาด</h3><p class="text-muted mt-2">ไม่สามารถโหลดข้อมูลเริ่มต้นได้ กรุณาลองรีเฟรชหน้าเว็บอีกครั้ง</p></div>`;
+                 return;
+            }
+            currentUser = 'ผู้ดูแลระบบ';
+            userRole = 'ผู้ดูแล';
+            document.getElementById('currentUser').textContent = currentUser;
+            document.getElementById('userRole').textContent = userRole;
+            document.getElementById('currentUserHeader').textContent = currentUser;
+            
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+
+            showPage('dashboard', { currentTarget: document.querySelector('a[onclick^="showPage(\'dashboard\'"]'), preventDefault: () => {} });
+        }
         
         // --- UI & NAVIGATION ---
         function showPage(pageId, event) {
@@ -214,11 +240,6 @@
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             event.currentTarget.classList.add('active');
             
-            // Re-attach specific form listeners for the newly rendered page
-            if (pageId === 'income') { document.getElementById('incomeForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'income')); }
-            if (pageId === 'expense') { document.getElementById('expenseForm').addEventListener('submit', (e) => handleTransactionSubmit(e, 'expense')); }
-            if (pageId === 'members') { document.getElementById('memberForm').addEventListener('submit', handleMemberSubmit); }
-
             renderAllData(pageId); 
 
             if (window.innerWidth < 1024) { 
@@ -245,13 +266,13 @@
         // --- INCOME / EXPENSE (Shared Logic) ---
         function openTransactionModal(type, mode = 'add', id = null) { const t = document.getElementById(`${type}ModalTitle`), f = document.getElementById(`${type}Form`); f.reset(); document.getElementById(`${type}EditId`).value = ''; setDefaultDates(); let data = type === 'income' ? incomeData.find(i => i.id == id) : expenseData.find(i => i.id == id); if (mode === 'edit' && data) { t.textContent = `แก้ไขราย${type === 'income' ? 'รับ' : 'จ่าย'}`; Object.keys(data).forEach(key => { const el_id = `${type}${key.charAt(0).toUpperCase() + key.slice(1)}`; const el = document.getElementById(el_id); if (el) el.value = data[key]; }); document.getElementById(`${type}EditId`).value = id; } else { t.textContent = `เพิ่มราย${type === 'income' ? 'รับ' : 'จ่าย'}`; } showModal(`${type}Modal`, true); }
         async function handleTransactionSubmit(e, type) { e.preventDefault(); const id = document.getElementById(`${type}EditId`).value; const isIncome = type === 'income'; const d = { date: document.getElementById(`${type}Date`).value, description: document.getElementById(`${type}Description`).value, paymentMethod: document.getElementById(`${type}PaymentMethod`).value, amount: document.getElementById(`${type}Amount`).value, note: document.getElementById(`${type}Note`).value }; if (!isIncome) d.receipt = document.getElementById('expenseReceipt').files.length > 0 ? `(ไฟล์) ${document.getElementById('expenseReceipt').files[0].name}` : (id ? (expenseData.find(i => i.id == id) || {}).receipt : ''); if (id) { d.id = id; const r = await postDataToGoogleSheet(`update${isIncome ? 'Income' : 'Expense'}`, d); if (r.status === 'success') { const idx = (isIncome ? incomeData : expenseData).findIndex(i => i.id == id); if (idx > -1) (isIncome ? incomeData : expenseData)[idx] = d; await logAudit(`แก้ไขราย${isIncome ? 'รับ' : 'จ่าย'}`, `ID: ${id}`); showCustomAlert('แก้ไขข้อมูลสำเร็จ'); } } else { d.id = Date.now(); const r = await postDataToGoogleSheet(`add${isIncome ? 'Income' : 'Expense'}`, d); if (r.status === 'success') { (isIncome ? incomeData : expenseData).push(d); await logAudit(`เพิ่มราย${isIncome ? 'รับ' : 'จ่าย'}`, `_ ${d.description}`); showCustomAlert(`บันทึกสำเร็จ`); } } renderAllData(type); showModal(`${type}Modal`, false); }
-        function loadTransactionTable(type) { const isIncome = type === 'income'; const data = isIncome ? incomeData : expenseData; const tb = document.getElementById(`${type}Table`); const s = [...data].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)); if (s.length === 0) { tb.innerHTML = `<tr><td colspan="${isIncome ? 6:7}" class="p-8 text-center text-muted">ยังไม่มีรายการ</td></tr>`; return; } tb.innerHTML = s.map(i => `<tr><td class="px-6 py-4 text-sm">${formatDate(i.date)}</td><td class="px-6 py-4 text-sm">${i.description||'-'}</td><td class="px-6 py-4 text-sm">${i.paymentMethod||'-'}</td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td>${isIncome ? '' : `<td class="px-6 py-4 text-sm">${i.receipt||'-'}</td>`}<td class="px-6 py-4 text-sm">${i.note||'-'}</td><td class="px-6 py-4 text-sm text-center"><button onclick="openTransactionModal('${type}','edit','${i.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button onclick="deleteTransaction('${type}','${i.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join(''); }
+        function loadTransactionTable(type) { const isIncome = type === 'income'; const data = isIncome ? incomeData : expenseData; const tb = document.getElementById(`${type}Table`); const s = [...data].sort((a,b) => new Date(b.date || 0) - new Date(a.date || 0)); if (s.length === 0) { tb.innerHTML = `<tr><td colspan="${isIncome ? 6:7}" class="p-8 text-center text-muted">ยังไม่มีรายการ</td></tr>`; return; } tb.innerHTML = s.map(i => `<tr><td class="px-6 py-4 text-sm">${formatDate(i.date)}</td><td class="px-6 py-4 text-sm">${i.description||'-'}</td><td class="px-6 py-4 text-sm">${i.paymentMethod||'-'}</td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.amount||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td>${isIncome ? '' : `<td class="px-6 py-4 text-sm">${i.receipt||'-'}</td>`}<td class="px-6 py-4 text-sm">${i.note||'-'}</td><td class="px-6 py-4 text-sm text-center"><button data-action="edit-${type}" data-id="${i.id}" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button data-action="delete-${type}" data-id="${i.id}" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join(''); }
         async function deleteTransaction(type, id) { showCustomConfirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?', async () => { const r = await postDataToGoogleSheet(`delete${type === 'income' ? 'Income' : 'Expense'}`, {id}); if (r.status === 'success') { if (type === 'income') incomeData = incomeData.filter(i => i.id != id); else expenseData = expenseData.filter(i => i.id != id); renderAllData(type); showCustomAlert('ลบข้อมูลสำเร็จ'); } }); }
         
         // --- MEMBER FUNCTIONS ---
         function openMemberModal(mode='add',id=null){const t=document.getElementById('memberModalTitle'),f=document.getElementById('memberForm');f.reset();document.getElementById('memberEditId').value='';setDefaultDates();if(mode==='edit'){t.textContent='แก้ไขสมาชิก';const d=membersData.find(i=>i.id==id);if(d){document.getElementById('memberEditId').value=d.id;document.getElementById('memberId').value=d.memberId;document.getElementById('memberName').value=d.name;document.getElementById('memberType').value=d.type;document.getElementById('memberShares').value=d.shares;document.getElementById('memberJoinDate').value=d.joinDate;}}else{t.textContent='เพิ่มสมาชิก';}showModal('memberModal',true);}
         async function handleMemberSubmit(e){e.preventDefault();const id=document.getElementById('memberEditId').value;const d={memberId:document.getElementById('memberId').value,name:document.getElementById('memberName').value,type:document.getElementById('memberType').value,shares:document.getElementById('memberShares').value,joinDate:document.getElementById('memberJoinDate').value};if(id){d.id=id;const r=await postDataToGoogleSheet('updateMember',d);if(r.status==='success'){const idx=membersData.findIndex(i=>i.id==id);if(idx>-1)membersData[idx]=d;await logAudit('แก้ไขสมาชิก',`ID: ${id}`);showCustomAlert('แก้ไขข้อมูลสำเร็จ');}}else{d.id=Date.now();const r=await postDataToGoogleSheet('addMember',d);if(r.status==='success'){membersData.push(d);await logAudit('เพิ่มสมาชิก',`_ ${d.name}`);showCustomAlert('เพิ่มสมาชิกสำเร็จ');}}renderAllData('members');showModal('memberModal',false);}
-        function loadMembersTable(){const tb=document.getElementById('membersTable');const s=[...membersData];if(s.length===0){tb.innerHTML=`<tr><td colspan="6" class="p-8 text-center text-muted">ยังไม่มีสมาชิก</td></tr>`;return}tb.innerHTML=s.map(i=>`<tr><td class="px-6 py-4 text-sm">${i.memberId||'-'}</td><td class="px-6 py-4 text-sm">${i.name||'-'}</td><td class="px-6 py-4 text-sm"><span class="px-2 py-1 text-xs font-medium rounded-full ${i.type==='ครู'?'bg-yellow-800/50 text-yellow-300':'bg-green-800/50 text-green-300'}">${i.type||'-'}</span></td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.shares||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td><td class="px-6 py-4 text-sm">${formatDate(i.joinDate)}</td><td class="px-6 py-4 text-sm text-center"><button onclick="openMemberModal('edit','${i.id}')" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button onclick="deleteMember('${i.id}')" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join('');updateMembersSummary();}
+        function loadMembersTable(){const tb=document.getElementById('membersTable');const s=[...membersData];if(s.length===0){tb.innerHTML=`<tr><td colspan="6" class="p-8 text-center text-muted">ยังไม่มีสมาชิก</td></tr>`;return}tb.innerHTML=s.map(i=>`<tr><td class="px-6 py-4 text-sm">${i.memberId||'-'}</td><td class="px-6 py-4 text-sm">${i.name||'-'}</td><td class="px-6 py-4 text-sm"><span class="px-2 py-1 text-xs font-medium rounded-full ${i.type==='ครู'?'bg-yellow-800/50 text-yellow-300':'bg-green-800/50 text-green-300'}">${i.type||'-'}</span></td><td class="px-6 py-4 text-sm font-semibold">฿${parseFloat(i.shares||0).toLocaleString('th-TH',{minimumFractionDigits:2})}</td><td class="px-6 py-4 text-sm">${formatDate(i.joinDate)}</td><td class="px-6 py-4 text-sm text-center"><button data-action="edit-member" data-id="${i.id}" class="text-yellow-500 hover:text-yellow-400 mr-2"><i class="fas fa-edit"></i></button><button data-action="delete-member" data-id="${i.id}" class="text-red-500 hover:text-red-400"><i class="fas fa-trash"></i></button></td></tr>`).join('');updateMembersSummary();}
         async function deleteMember(id){showCustomConfirm('คุณแน่ใจหรือไม่ว่าต้องการลบสมาชิกนี้?',async()=>{const r=await postDataToGoogleSheet('deleteMember',{id});if(r.status==='success'){membersData=membersData.filter(i=>i.id!=id);renderAllData('members');showCustomAlert('ลบข้อมูลสำเร็จ');}});}
         function updateMembersSummary(){const ts=membersData.reduce((s,m)=>s+parseFloat(m.shares||0),0);const tcs=membersData.filter(m=>m.type==='ครู').reduce((s,m)=>s+parseFloat(m.shares||0),0);const sts=membersData.filter(m=>m.type==='นักเรียน').reduce((s,m)=>s+parseFloat(m.shares||0),0);if(document.getElementById('totalShares')){document.getElementById('totalShares').textContent='฿'+ts.toLocaleString('th-TH',{minimumFractionDigits:2});document.getElementById('teacherShares').textContent='฿'+tcs.toLocaleString('th-TH',{minimumFractionDigits:2});document.getElementById('studentShares').textContent='฿'+sts.toLocaleString('th-TH',{minimumFractionDigits:2});}}
         async function processCsvFile(){const fI=document.getElementById('csvFile');if(!fI.files.length)return showCustomAlert('กรุณาเลือกไฟล์ CSV');const f=fI.files[0];const r=new FileReader();r.onload=async e=>{const l=e.target.result.split('\n').slice(1);const nM=l.filter(ln=>ln.trim()).map((ln,i)=>{const[mId,nm,ty,sh,jd]=ln.split(',');return{id:Date.now()+i,memberId:(mId||'').trim(),name:(nm||'').trim(),type:(ty||'').trim(),shares:(sh||'').trim(),joinDate:(jd||'').trim()};});if(nM.length>0){const res=await postDataToGoogleSheet('addBulkMembers',nM);if(res.status==='success'){membersData.push(...nM);renderAllData('members');showModal('csvModal',false);await logAudit('นำเข้า CSV',`${nM.length} รายการ`);showCustomAlert(`นำเข้าสำเร็จ ${nM.length} รายการ`);}}else{showCustomAlert('ไม่พบข้อมูลในไฟล์');}};r.readAsText(f);}
@@ -349,18 +370,18 @@
                     </div>`,
                 reports: `
                     <div id="reportsPage">
-                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">เลือกช่วงเวลาสำหรับรายงาน</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">จากวันที่</label><input type="date" id="reportStartDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">ถึงวันที่</label><input type="date" id="reportEndDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="flex items-end col-span-2 md:col-span-1"><button onclick="generateReport()" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-chart-bar"></i>สร้างรายงาน</button></div></div></div>
+                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">เลือกช่วงเวลาสำหรับรายงาน</h3><div class="grid grid-cols-1 md:grid-cols-3 gap-4"><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">จากวันที่</label><input type="date" id="reportStartDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="col-span-1 md:col-span-1"><label class="block text-sm font-medium text-gray-300 mb-1">ถึงวันที่</label><input type="date" id="reportEndDate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500"></div><div class="flex items-end col-span-2 md:col-span-1"><button data-action="generate-report" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-chart-bar"></i>สร้างรายงาน</button></div></div></div>
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6"><div class="data-card p-6"><h3 class="text-xl font-bold mb-4">แนวโน้มรายรับ-รายจ่าย</h3><div class="chart-container"><canvas id="incomeExpenseChart"></canvas></div></div><div class="data-card p-6"><h3 class="text-xl font-bold mb-4">สัดส่วนทุนเรือนหุ้น</h3><div class="chart-container"><canvas id="memberSharesChart"></canvas></div></div></div>
                         <div class="data-card"><div class="p-6 border-b border-gray-700"><h3 class="text-xl font-bold">รายงานกำไร-ขาดทุน</h3></div><div id="profitLossReport" class="p-6"><div class="text-center text-muted py-8">กรุณาเลือกช่วงเวลาและกดสร้างรายงาน</div></div></div>
                     </div>`,
                 income: `
                     <div id="incomePage" class="data-card">
-                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายรับ</h3><button onclick="openTransactionModal('income', 'add')" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายรับ</button></div>
+                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายรับ</h3><button data-action="add-income" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายรับ</button></div>
                         <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ช่องทาง</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">จำนวนเงิน</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">หมายเหตุ</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="incomeTable"></tbody></table></div>
                     </div>`,
                 expense: `
                     <div id="expensePage" class="data-card">
-                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายจ่าย</h3><button onclick="openTransactionModal('expense', 'add')" class="btn btn-primary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายจ่าย</button></div>
+                        <div class="p-6 border-b border-gray-700 flex justify-between items-center"><h3 class="text-xl font-bold">รายการรายจ่าย</h3><button data-action="add-expense" class="btn btn-primary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มรายจ่าย</button></div>
                         <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รายละเอียด</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ช่องทาง</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">จำนวนเงิน</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ใบเสร็จ</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">หมายเหตุ</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="expenseTable"></tbody></table></div>
                     </div>`,
                 members: `
@@ -371,13 +392,13 @@
                             <div class="data-card p-6"><h4 class="text-lg font-semibold mb-2">ทุนเรือนหุ้นนักเรียน</h4><p id="studentShares" class="text-3xl font-bold text-sky-400">฿0.00</p></div>
                         </div>
                         <div class="data-card">
-                            <div class="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4"><h3 class="text-xl font-bold">รายชื่อสมาชิก</h3><div class="flex space-x-2"><button onclick="openMemberModal('add')" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มสมาชิก</button><button onclick="showModal('csvModal', true)" class="btn btn-primary flex items-center gap-2"><i class="fas fa-upload"></i>นำเข้า CSV</button></div></div>
+                            <div class="p-6 border-b border-gray-700 flex flex-wrap justify-between items-center gap-4"><h3 class="text-xl font-bold">รายชื่อสมาชิก</h3><div class="flex space-x-2"><button data-action="add-member" class="btn btn-secondary flex items-center gap-2"><i class="fas fa-plus"></i>เพิ่มสมาชิก</button><button data-action="import-csv" class="btn btn-primary flex items-center gap-2"><i class="fas fa-upload"></i>นำเข้า CSV</button></div></div>
                             <div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รหัส</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ประเภท</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ทุนเรือนหุ้น</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">วันที่เข้าร่วม</th><th class="px-6 py-3 text-center text-xs font-semibold text-muted uppercase tracking-wider">จัดการ</th></tr></thead><tbody id="membersTable"></tbody></table></div>
                         </div>
                     </div>`,
                 dividend: `
                     <div id="dividendPage">
-                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">คำนวณเงินปันผล</h3><div class="flex items-center space-x-4"><div class="flex-1"><label class="block text-base font-medium text-gray-300 mb-1">อัตราเงินปันผล (%)</label><input type="number" id="dividendRate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น 5.5" step="0.1"></div><button onclick="calculateDividend()" class="btn btn-primary mt-7 flex items-center gap-2"><i class="fas fa-calculator"></i>คำนวณ</button></div></div>
+                        <div class="data-card p-6 mb-6"><h3 class="text-xl font-bold mb-4">คำนวณเงินปันผล</h3><div class="flex items-center space-x-4"><div class="flex-1"><label class="block text-base font-medium text-gray-300 mb-1">อัตราเงินปันผล (%)</label><input type="number" id="dividendRate" class="w-full px-3 py-2 rounded-lg focus:ring-2 focus:ring-green-500" placeholder="เช่น 5.5" step="0.1"></div><button data-action="calculate-dividend" class="btn btn-primary mt-7 flex items-center gap-2"><i class="fas fa-calculator"></i>คำนวณ</button></div></div>
                         <div id="dividendResults" class="data-card hidden"><div class="p-6 border-b border-gray-700"><h3 class="text-xl font-bold">ผลการคำนวณเงินปันผล</h3></div><div class="overflow-x-auto"><table class="w-full table-striped"><thead><tr><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">รหัส</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ชื่อ-นามสกุล</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">ทุนเรือนหุ้น</th><th class="px-6 py-3 text-left text-xs font-semibold text-muted uppercase tracking-wider">เงินปันผล</th></tr></thead><tbody id="dividendTable"></tbody></table></div></div>
                     </div>`,
                 audit: `
@@ -393,13 +414,13 @@
                                 <div>
                                     <h4 class="font-semibold text-lg">สำรองข้อมูล (สำหรับกู้คืน)</h4>
                                     <p class="text-sm text-muted mb-2">ดาวน์โหลดไฟล์ \`.json\` สำหรับใช้กู้คืนข้อมูลทั้งหมดของระบบ</p>
-                                    <button onclick="manualBackup()" class="w-full btn btn-secondary flex items-center justify-center gap-2"><i class="fas fa-download"></i>สำรองข้อมูล (.json)</button>
+                                    <button data-action="manual-backup" class="w-full btn btn-secondary flex items-center justify-center gap-2"><i class="fas fa-download"></i>สำรองข้อมูล (.json)</button>
                                 </div>
                                 <div class="border-t border-gray-700 my-4"></div>
                                 <div>
                                     <h4 class="font-semibold text-lg">ส่งออกเป็น Excel</h4>
                                     <p class="text-sm text-muted mb-2">ดาวน์โหลดข้อมูลทั้งหมดในรูปแบบไฟล์ \`.csv\` เพื่อเปิดดูใน Excel</p>
-                                    <button onclick="exportToExcel()" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-file-excel"></i>ส่งออก Excel (.csv)</button>
+                                    <button data-action="export-excel" class="w-full btn btn-primary flex items-center justify-center gap-2"><i class="fas fa-file-excel"></i>ส่งออก Excel (.csv)</button>
                                 </div>
                             </div>
                         </div>
@@ -408,7 +429,7 @@
                             <div class="space-y-4">
                                 <div class="p-4 bg-yellow-900/50 border border-yellow-800/50 rounded-lg"><div class="flex items-center"><i class="fas fa-exclamation-triangle text-yellow-400 mr-3"></i><p class="text-sm text-yellow-300">การกู้คืนข้อมูลจะเขียนทับข้อมูลปัจจุบันทั้งหมด</p></div></div>
                                 <div><label class="block text-base font-medium text-gray-300 mb-1">เลือกไฟล์สำรองข้อมูล (.json)</label><input type="file" id="restoreFile" class="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:font-semibold file:bg-green-900/50 file:text-green-300 hover:file:bg-green-800/50" accept=".json"></div>
-                                <button onclick="restoreData()" class="w-full btn btn-danger flex items-center justify-center gap-2"><i class="fas fa-upload"></i>กู้คืนข้อมูล</button>
+                                <button data-action="restore-data" class="w-full btn btn-danger flex items-center justify-center gap-2"><i class="fas fa-upload"></i>กู้คืนข้อมูล</button>
                             </div>
                         </div>
                     </div>`
